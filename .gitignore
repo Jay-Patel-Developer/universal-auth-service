@@ -1,0 +1,69 @@
+# Maven/Java
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+/.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*.vscode/
+
+# Environment
+.env
+*.env
+
+# Docker
+*.pid
+*.pid.lock
+docker-compose.override.yml
+
+# Test output
+/test-output/
+
+# Generated
+/generated/
+
+# Local scripts
+setup-env.sh
+setup-environments.sh
+
+# Database
+*.h2.db
+*.mv.db
+*.sqlite
+
+# Misc
+*.class
+*.jar
+*.war
+*.ear
+
+# Node/npm (if any frontend or scripts)
+node_modules/
+
+# Coverage
+/coverage/
+
+# Backup
+*~
+
+# Ignore migration logs
+/db/migration/*.log
+
+# Ignore IntelliJ and Eclipse project files
+*.classpath
+*.project
+*.settings/
+
+# Ignore VSCode settings
+.vscode/
