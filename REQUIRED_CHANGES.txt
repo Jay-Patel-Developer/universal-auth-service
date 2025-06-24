@@ -1,0 +1,55 @@
+# REQUIRED CHANGES TO MEET CURRENT SCOPE (as of 23 June 2025)
+
+## 1. User Management Endpoints
+- Ensure UserController exposes:
+  - GET /api/auth/user/{id} — Retrieve user by ID
+  - GET /api/auth/user/email/{email} — Retrieve user by email
+  - PUT /api/auth/user/{id} — Update user information
+  - POST /api/auth/deactivate/{id} — Deactivate user account
+  - POST /api/auth/reactivate/{id} — Reactivate user account
+  - POST /api/auth/add-role — Add role to user
+  - POST /api/auth/remove-role — Remove role from user
+- These should call the corresponding methods in UserService.
+
+## 2. Session Management Endpoints (MISSING)
+- Implement endpoints for session management:
+  - GET /api/auth/sessions — List active user sessions
+  - DELETE /api/auth/sessions/{sessionId} — Revoke specific session
+  - DELETE /api/auth/sessions/all-except-current — Revoke all other sessions
+- Ensure session management is secure and supports multi-device flows.
+
+## 3. Admin & Monitoring Endpoints
+- Ensure AdminController exposes:
+  - GET /api/auth/admin/security-report — Generate security audit report
+  - GET /api/auth/health — Service health check
+- Implement logic to aggregate security events and return service health status.
+
+## 4. OAuth Provider Logic
+- Replace stub/mock OAuth provider validation in OAuthController with real HTTP calls to Google, Facebook, GitHub, etc.
+- Ensure provider identity linking and management is robust and secure.
+
+## 5. Feature Toggles & Configurability (MISSING)
+- All core user authentication features must be enabled by default.
+- All extra/advanced features (MFA, event publishing, advanced security, rate limiting, etc.) must be configurable and support enable/disable via application properties/config files.
+- Add config options for:
+  - MFA enforcement (required/optional/disabled)
+  - Event publishing (Kafka integration)
+  - Rate limiting (per endpoint)
+  - Security auditing
+  - OAuth providers (enable/disable per provider)
+
+## 6. API Consistency & Error Handling
+- Ensure all endpoints use proper authentication/authorization guards (RBAC where needed).
+- Add missing error handling and consistent response formats (success/error keys, HTTP status codes).
+
+## 7. Documentation & Tests
+- Update API documentation (Swagger/OpenAPI) to include all endpoints and config options.
+- Add/expand unit and integration tests for all controllers, endpoints, and config toggles.
+- Document all new config options in README and docs/FEATURE_CONFIGURATION.md.
+
+## 8. Optional: Refactor
+- Remove duplicate/legacy UserService.java if not needed.
+- Consider splitting large service classes for maintainability.
+
+---
+This list is based on a comparison of current_scope.md and the actual codebase. All other core features (MFA, GDPR, password reset, session management, security logging, event publishing) are present in the service layer and exposed via API, except for the above gaps. All advanced features must be configurable via application properties.
