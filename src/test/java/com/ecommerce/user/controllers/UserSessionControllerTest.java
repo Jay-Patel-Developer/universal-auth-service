@@ -3,7 +3,6 @@ package com.ecommerce.user.controllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -14,9 +13,6 @@ class UserSessionControllerTest {
     // Inject MockMvc for API/controller testing
     @Autowired
     private MockMvc mockMvc;
-    // Mock SessionService for isolated controller tests
-    @MockBean
-    private SessionService sessionService;
 
     @Test
     void testListSessions() throws Exception {

@@ -16,6 +16,7 @@ class PasswordResetControllerTest {
     private MockMvc mockMvc;
 
     // Mock PasswordResetService for isolated controller tests
+    // Replace missing PasswordResetService with a mock or comment out if not used
     @MockBean
     private PasswordResetService passwordResetService;
 

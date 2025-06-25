@@ -4,7 +4,6 @@ import com.ecommerce.user.dto.*;
 import com.ecommerce.user.models.User;
 import com.ecommerce.user.services.UserService;
 import com.ecommerce.user.services.AdvancedJwtService;
-import com.ecommerce.user.services.GdprService;
 import com.ecommerce.user.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,9 +27,6 @@ public class AuthController {
     
     @Autowired
     private AdvancedJwtService advancedJwtService;
-    
-    @Autowired
-    private GdprService gdprService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest request, HttpServletRequest httpRequest) {
@@ -185,146 +180,6 @@ public class AuthController {
         }
     }
     
-    @PostMapping("/mfa/verify")
-    public ResponseEntity<?> verifyAndEnableMfa(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody MfaSetupRequest request) {
-        try {
-            String token = authHeader.substring(7);
-            Claims claims = advancedJwtService.validateToken(token);
-            String email = claims.getSubject();
-            
-            UserResponse user = userService.getUserByEmail(email);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
-            }
-            
-            boolean verified = userService.verifyAndEnableMfa(user.getId(), request.getTotpCode());
-            
-            if (verified) {
-                return ResponseEntity.ok(Map.of(
-                    "message", "MFA enabled successfully",
-                    "backupCodes", userService.getUserById(user.getId()).getBackupCodes()
-                ));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "Invalid verification code"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/mfa/disable")
-    public ResponseEntity<?> disableMfa(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody MfaSetupRequest request) {
-        try {
-            String token = authHeader.substring(7);
-            Claims claims = advancedJwtService.validateToken(token);
-            String email = claims.getSubject();
-            
-            UserResponse user = userService.getUserByEmail(email);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
-            }
-            
-            boolean disabled = userService.disableMfa(user.getId(), request.getTotpCode());
-            
-            if (disabled) {
-                return ResponseEntity.ok(Map.of("message", "MFA disabled successfully"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "Invalid verification code"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/gdpr/export")
-    public ResponseEntity<?> exportUserData(
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            String token = authHeader.substring(7);
-            Claims claims = advancedJwtService.validateToken(token);
-            String email = claims.getSubject();
-            
-            UserResponse user = userService.getUserByEmail(email);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
-            }
-            
-            Map<String, Object> exportData = gdprService.exportUserData(user.getId());
-            
-            return ResponseEntity.ok(exportData);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/gdpr/request-deletion")
-    public ResponseEntity<?> requestDataDeletion(
-            @RequestHeader("Authorization") String authHeader,
-            HttpServletRequest httpRequest) {
-        try {
-            String token = authHeader.substring(7);
-            Claims claims = advancedJwtService.validateToken(token);
-            String email = claims.getSubject();
-            
-            UserResponse user = userService.getUserByEmail(email);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
-            }
-            
-            String clientIp = httpRequest.getRemoteAddr();
-            String userAgent = httpRequest.getHeader("User-Agent");
-            
-            boolean scheduled = gdprService.requestDeletion(user.getId(), clientIp, userAgent);
-            
-            if (scheduled) {
-                return ResponseEntity.ok(Map.of("message", "Deletion request submitted successfully", 
-                                               "scheduledFor", "30 days from now"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "Failed to schedule deletion"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/gdpr/cancel-deletion")
-    public ResponseEntity<?> cancelDataDeletion(
-            @RequestHeader("Authorization") String authHeader,
-            HttpServletRequest httpRequest) {
-        try {
-            String token = authHeader.substring(7);
-            Claims claims = advancedJwtService.validateToken(token);
-            String email = claims.getSubject();
-            
-            UserResponse user = userService.getUserByEmail(email);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
-            }
-            
-            String clientIp = httpRequest.getRemoteAddr();
-            String userAgent = httpRequest.getHeader("User-Agent");
-            
-            boolean cancelled = gdprService.cancelDeletion(user.getId(), clientIp, userAgent);
-            
-            if (cancelled) {
-                return ResponseEntity.ok(Map.of("message", "Deletion request cancelled successfully"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "Failed to cancel deletion"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(
             @RequestHeader("Authorization") String authHeader,
@@ -352,24 +207,6 @@ public class AuthController {
             } else {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid old password"));
             }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
-        }
-    }
-    
-    @GetMapping("/sessions")
-    public ResponseEntity<?> getUserSessions(
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            String token = authHeader.substring(7);
-            Claims claims = advancedJwtService.validateToken(token);
-            String email = claims.getSubject();
-            
-            // Get user sessions from JWT service
-            List<Map<String, Object>> sessions = advancedJwtService.getUserSessions(email);
-            
-            return ResponseEntity.ok(Map.of("sessions", sessions));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));

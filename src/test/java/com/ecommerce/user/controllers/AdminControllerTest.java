@@ -14,9 +14,6 @@ class AdminControllerTest {
     // Inject MockMvc for API/controller testing
     @Autowired
     private MockMvc mockMvc;
-    // Mock SecurityAuditService for isolated controller tests
-    @MockBean
-    private SecurityAuditService securityAuditService;
 
     @Test
     void testGetSecurityReport() throws Exception {

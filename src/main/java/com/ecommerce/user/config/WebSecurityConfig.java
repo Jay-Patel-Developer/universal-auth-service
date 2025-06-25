@@ -31,13 +31,19 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors -> cors.configurationSource(corsConfigurationSourceWeb()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/validate-token", 
-                             "/api/auth/oauth/**", "/h2-console/**", "/actuator/health").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/register"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/login"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/validate-token"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/auth/oauth/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/h2-console/**"),
+                    new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/actuator/health")
+                ).permitAll()
+                .requestMatchers(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/admin/**")).hasRole("ADMIN")
                 .anyRequest().authenticated())
             .headers(headers -> headers.frameOptions().sameOrigin());
                 
@@ -55,7 +61,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSourceWeb() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
