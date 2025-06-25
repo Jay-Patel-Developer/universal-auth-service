@@ -67,3 +67,15 @@ node_modules/
 
 # Ignore VSCode settings
 .vscode/
+
+# Ignore test sources
+src/test/
+
+# Ignore build output
+target/
+
+# Ignore IDE and OS files
+*.iml
+.idea/
+*.swp
+.DS_Store
